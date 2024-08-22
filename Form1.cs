@@ -8,7 +8,6 @@ namespace Memorama.Pablo_y_Héctor
     public partial class Form1 : Form
     {
         Random random = new Random();
-
         List<string> icons = new List<string>()
         {
             "!", "!", "N", "N", ",", ",", "w", "w", "d", "d", "b", "b",
@@ -17,32 +16,56 @@ namespace Memorama.Pablo_y_Héctor
         };
 
         Label firstClicked, secondClicked;
+        private Timer gameTimer;
+        private int elapsedTime;
+        private int score;  // Variable for scoring
+
         public Form1()
         {
             InitializeComponent();
             AssignIconsToSquares();
+
+            // Initialize and set the timer
+            elapsedTime = 0;
+            score = 0;
+            gameTimer = new Timer();
+            gameTimer.Interval = 1000;
+            gameTimer.Tick += GameTimer_Tick;
+            gameTimer.Start();
+
+            // Configure the label to show the score
+            lblScore.AutoSize = false;
+            lblScore.Width = 200;
+            lblScore.Font = new Font("Arial", 16, FontStyle.Bold);
+            lblScore.TextAlign = ContentAlignment.MiddleCenter;
+            lblScore.ForeColor = Color.Black;
+            lblScore.Text = $"Score: {score}";
+
+            // Configure the label to show the time
+            labelTime.AutoSize = false;
+            labelTime.Width = 200;
+            labelTime.Font = new Font("Arial", 16, FontStyle.Bold);
+            labelTime.TextAlign = ContentAlignment.MiddleCenter;
+            labelTime.ForeColor = Color.Black;
+
+            // Set a solid color background
+            this.BackColor = Color.LightGray; 
         }
 
-        
         private void label_Click(object sender, EventArgs e)
         {
-            //when the player click two cards and they dont match, both will hide again
             if (firstClicked != null && secondClicked != null)
                 return;
 
-
-            //the as keyword is trying to convert the center into a label, but if it cannot do that, "clickedLabel" just will be null
             Label clickedLabel = sender as Label;
-
             if (clickedLabel == null)
                 return;
 
-            //if an already pressed button, is pressed again, it will be ignored
             if (clickedLabel.ForeColor == Color.Black)
                 return;
+
             if (firstClicked == null)
             {
-                //if a label is first time pressed, the color will turn to black, so it will be visible 
                 firstClicked = clickedLabel;
                 firstClicked.ForeColor = Color.Black;
                 return;
@@ -53,32 +76,39 @@ namespace Memorama.Pablo_y_Héctor
 
             CheckForWinner();
 
-            //when two images are the same, both will be freezed in place
             if (firstClicked.Text == secondClicked.Text)
             {
+                score++; // Increase score
+                lblScore.Text = $"Score: {score}"; // Update the Score Label
+
                 firstClicked = null;
                 secondClicked = null;
             }
-            else 
+            else
                 timer1.Start();
         }
 
-        //check for winner and type a message
-        private void CheckForWinner ()
+        private void GameTimer_Tick(object sender, EventArgs e)
+        {
+            elapsedTime++;
+            // Update the Label with elapsed time
+            labelTime.Text = $"Time: {elapsedTime} s";
+        }
+
+        private void CheckForWinner()
         {
             Label label;
             for (int i = 0; i < tableLayoutPanel1.Controls.Count; i++)
             {
                 label = tableLayoutPanel1.Controls[i] as Label;
-
                 if (label != null && label.ForeColor == label.BackColor)
                     return;
             }
 
-            MessageBox.Show("Felicidades, te ganaste un cantonés");
+            gameTimer.Stop(); // Stop the timer
+            MessageBox.Show($"Felicidades, te ganaste un cantonés. Tiempo: {elapsedTime} segundos. Puntuación final: {score}");
         }
 
-        //set a time to click the pair of images, and then, restart everything to the backround color
         private void timer1_Tick(object sender, EventArgs e)
         {
             timer1.Stop();
@@ -102,7 +132,6 @@ namespace Memorama.Pablo_y_Héctor
                 else
                     continue;
 
-                // Elige un número aleatorio para asingarle un ícono en la lista, y luego se elimina el número aleatorio de la lista de íconos
                 randomNumber = random.Next(0, icons.Count);
                 label.Text = icons[randomNumber];
 
@@ -111,3 +140,4 @@ namespace Memorama.Pablo_y_Héctor
         }
     }
 }
+
